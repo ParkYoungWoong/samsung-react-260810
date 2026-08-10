@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 
 export interface ResponseData {
   Search: Movie[]
@@ -16,8 +17,9 @@ export interface Movie {
 }
 
 export default function Movies() {
+  const [inputText, setInputText] = useState('')
   const [searchText, setSearchText] = useState('')
-  const { data: movies } = useQuery({
+  const { data: movies = [] } = useQuery({
     queryKey: ['movies', searchText],
     queryFn: async () => {
       const { data } = await axios.get<ResponseData>(
@@ -26,16 +28,20 @@ export default function Movies() {
       return data.Search
     },
     staleTime: 1000 * 60 * 60 * 24, // 캐싱하는 시간(ms)
-    enabled: false
+    enabled: Boolean(searchText)
   })
+
+  function fetchMovies() {
+    setSearchText(inputText)
+  }
 
   return (
     <>
       <div>
         <input
           type="text"
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
           onKeyDown={e => {
             if (e.key === 'Enter') fetchMovies()
           }}
@@ -45,7 +51,11 @@ export default function Movies() {
       <div>
         <ul>
           {movies.map(movie => {
-            return <li key={movie.imdbID}>{movie.Title}</li>
+            return (
+              <li key={movie.imdbID}>
+                <Link to={`/movies/${movie.imdbID}`}>{movie.Title}</Link>
+              </li>
+            )
           })}
         </ul>
       </div>
