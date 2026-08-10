@@ -4,6 +4,7 @@ import Default from '@/routes/layouts/Default'
 import Home from '@/routes/pages/Home'
 import About from '@/routes/pages/About'
 import SignIn from '@/routes/pages/SignIn'
+import Movies from '@/routes/pages/Movies'
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: '/signin',
         element: <SignIn />
+      },
+      {
+        path: '/movies',
+        element: <Movies />
       }
     ]
   }
