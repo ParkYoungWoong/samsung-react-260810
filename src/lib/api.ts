@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const ACCESS_TOKEN_NAME = 'token'
 const REFRESH_URL = '/auth/refresh'
-const SIGNIN_URL = '/signin'
+// const SIGNIN_URL = '/signin'
 
 const options = {
   baseURL: 'https://api.heropy.dev/v1',
@@ -50,7 +50,7 @@ api.interceptors.response.use(
       } catch (refreshErr) {
         // 리프레시 토큰이 만료된 경우, 로그인 페이지로 리디렉션
         localStorage.removeItem(ACCESS_TOKEN_NAME)
-        window.location.href = SIGNIN_URL // 사용자를 로그인 페이지로 강제 이동
+        // window.location.href = SIGNIN_URL // 사용자를 로그인 페이지로 강제 이동
         return Promise.reject(refreshErr)
       }
     }

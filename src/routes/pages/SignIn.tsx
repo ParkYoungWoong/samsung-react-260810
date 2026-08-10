@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import api, { ACCESS_TOKEN_NAME } from '@/lib/api'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const redirectTo = searchParams.get('redirectTo')
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -20,7 +22,7 @@ export default function SignIn() {
     })
     localStorage.setItem(ACCESS_TOKEN_NAME, token)
     setIsLoading(false)
-    navigate('/')
+    navigate(redirectTo || '/')
   }
 
   return (

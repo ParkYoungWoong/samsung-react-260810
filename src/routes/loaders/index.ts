@@ -13,6 +13,14 @@ async function verifyToken() {
 
 export async function requiresAuth({ request }: { request: Request }) {
   const isVerified = await verifyToken()
+  // 통과
   if (isVerified) return null
-  return redirect('/signin')
+  // 실패
+  // http://localhost:3000/movies?a=1&b=2
+  const url = new URL(request.url)
+  // url.pathname // '/movies'
+  // url.search // '?a=1&b=2'
+  return redirect(
+    `/signin?redirectTo=${encodeURIComponent(url.pathname + url.search)}`
+  )
 }
