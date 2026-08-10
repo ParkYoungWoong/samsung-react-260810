@@ -1,7 +1,8 @@
 // http://localhost:5173/movies/tt2250912
-import { useParams } from 'react-router'
+import { useParams, useNavigate } from 'react-router'
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import Modal from '@/components/Modal'
 
 export interface Movie {
   Title: string
@@ -37,25 +38,33 @@ export interface Rating {
 
 export default function MovieDetails() {
   const { movieId } = useParams()
-  const [movie, setMovie] = useState<Movie | null>(null)
-
-  useEffect(() => {
-    async function fetchMovie() {
+  const { data: movie } = useQuery<Movie>({
+    queryKey: ['movie details', movieId],
+    queryFn: async () => {
       const { data } = await axios.get<Movie>(
         `https://omdbapi.com?apikey=9d38c929&i=${movieId}`
       )
-      setMovie(data)
-    }
-    fetchMovie()
-  }, [])
+      return data
+    },
+    staleTime: 1000 * 60 * 60 * 24
+  })
+  const navigate = useNavigate()
 
   return (
-    <>
+    <Modal
+      onClose={() => {
+        navigate('/movies')
+      }}>
       {movie && (
         <>
           <h1>{movie.Title}</h1>
+          <p>{movie.Plot}</p>
+          <img
+            src={movie.Poster}
+            alt={movie.Title}
+          />
         </>
       )}
-    </>
+    </Modal>
   )
 }

@@ -6,6 +6,7 @@ import About from '@/routes/pages/About'
 import SignIn from '@/routes/pages/SignIn'
 import Movies from '@/routes/pages/Movies'
 import MovieDetails from '@/routes/pages/MovieDetails'
+import NotFound from '@/routes/pages/NotFound'
 
 const router = createBrowserRouter([
   {
@@ -25,13 +26,19 @@ const router = createBrowserRouter([
       },
       {
         path: '/movies',
-        element: <Movies />
-      },
-      {
-        path: '/movies/:movieId',
-        element: <MovieDetails />
+        element: <Movies />,
+        children: [
+          {
+            path: '/movies/:movieId',
+            element: <MovieDetails />
+          }
+        ]
       }
     ]
+  },
+  {
+    path: '*',
+    element: <NotFound />
   }
 ])
 

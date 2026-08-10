@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import { Link, Outlet } from 'react-router'
 
 export interface ResponseData {
   Search: Movie[]
@@ -59,6 +59,7 @@ export default function Movies() {
           })}
         </ul>
       </div>
+      <Outlet />
     </>
   )
 }
