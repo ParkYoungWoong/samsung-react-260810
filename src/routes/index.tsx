@@ -7,6 +7,7 @@ import SignIn from '@/routes/pages/SignIn'
 import Movies from '@/routes/pages/Movies'
 import MovieDetails from '@/routes/pages/MovieDetails'
 import NotFound from '@/routes/pages/NotFound'
+import { requiresAuth } from '@/routes/loaders'
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/movies',
+        loader: requiresAuth,
         element: <Movies />,
         children: [
           {
