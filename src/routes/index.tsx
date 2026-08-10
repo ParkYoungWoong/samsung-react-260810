@@ -1,21 +1,27 @@
 // Data Mode(CSR)
 import { createBrowserRouter, RouterProvider } from 'react-router'
+import Default from '@/routes/layouts/Default'
 import Home from '@/routes/pages/Home'
 import About from '@/routes/pages/About'
 import SignIn from '@/routes/pages/SignIn'
 
 const router = createBrowserRouter([
   {
-    path: '/', // http://localhost:5173/
-    element: <Home />
-  },
-  {
-    path: '/about',
-    element: <About />
-  },
-  {
-    path: '/signin',
-    element: <SignIn />
+    element: <Default />,
+    children: [
+      {
+        path: '/', // http://localhost:5173/
+        element: <Home />
+      },
+      {
+        path: '/about',
+        element: <About />
+      },
+      {
+        path: '/signin',
+        element: <SignIn />
+      }
+    ]
   }
 ])
 
