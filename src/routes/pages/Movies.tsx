@@ -22,16 +22,20 @@ export default function Movies() {
   const searchText = useMovieStore(s => s.searchText)
   const setSearchText = useMovieStore(s => s.setSearchText)
   const [inputText, setInputText] = useState(searchText)
-  const { data: movies = [] } = useQuery({
+  const { data: movies } = useQuery({
     queryKey: ['movies', searchText],
     queryFn: async () => {
       const { data } = await axios.post<ResponseData>('/api/movie', {
         title: searchText
       })
-      return data.Search
+      return data
     },
     staleTime: 1000 * 60 * 60 * 24, // 캐싱하는 시간(ms)
-    enabled: Boolean(searchText)
+    enabled: Boolean(searchText),
+    select: data => {
+      const movies = data.Search || []
+      return movies.filter(movie => Number(movie.Year) <= 2015)
+    }
   })
 
   function fetchMovies() {
@@ -53,10 +57,12 @@ export default function Movies() {
       </div>
       <div>
         <ul>
-          {movies.map(movie => {
+          {movies?.map(movie => {
             return (
               <li key={movie.imdbID}>
-                <Link to={`/movies/${movie.imdbID}`}>{movie.Title}</Link>
+                <Link to={`/movies/${movie.imdbID}`}>
+                  {movie.Title}({movie.Year})
+                </Link>
               </li>
             )
           })}
