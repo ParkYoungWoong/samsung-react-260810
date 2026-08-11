@@ -1,10 +1,6 @@
 import axios from 'axios'
 import { useState } from 'react'
-import {
-  useInfiniteQuery,
-  useQueryClient,
-  infiniteQueryOptions
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { Link, Outlet } from 'react-router'
 import { useMovieStore } from '@/stores/movie'
 
@@ -32,36 +28,24 @@ export default function Movies() {
   const searchText = useMovieStore(s => s.searchText)
   const setSearchText = useMovieStore(s => s.setSearchText)
   const [inputText, setInputText] = useState(searchText)
-
-  const options = infiniteQueryOptions({
+  const options = queryOptions({
     queryKey: ['movies', searchText],
-    queryFn: async ({ signal, pageParam }) => {
+    queryFn: async () => {
       // await new Promise(resolve => setTimeout(resolve, 3000))
-      const { data } = await axios.post<ResponseData>(
-        '/api/movie',
-        {
-          title: searchText,
-          page: pageParam
-        },
-        { signal }
-      )
-      if (data.Response === 'False') throw new Error(data.Error)
+      const { data } = await axios.post<ResponseData>('/api/movie', {
+        title: searchText
+      })
       return data
     },
     staleTime: 1000 * 5, // 캐싱하는 시간(ms)
     enabled: Boolean(searchText),
-    placeholderData: prev => prev, // 깜빡이는 부분에 채워넣을 데이터
-    getNextPageParam: (lastPage, pages) => {
-      // '817' => 817 => 81.7 => 82
-      const maxPage = Math.ceil(Number(lastPage.totalResults) / 10)
-      const currentPage = pages.length
-      if (currentPage < maxPage) return currentPage + 1
-      return null
+    select: data => {
+      const movies = data.Response === 'True' ? data.Search : []
+      return movies.filter(movie => Number(movie.Year) <= 2015)
     },
-    initialPageParam: 1
+    placeholderData: prev => prev // 깜빡이는 부분에 채워넣을 데이터
   })
-
-  const { data, refetch } = useInfiniteQuery(options)
+  const { data: movies, refetch } = useQuery(options)
 
   function fetchMovies() {
     setSearchText(inputText)
@@ -88,7 +72,7 @@ export default function Movies() {
       </div>
       <div>
         <ul>
-          {/* {movies?.map(movie => {
+          {movies?.map(movie => {
             return (
               <li key={movie.imdbID}>
                 <Link to={`/movies/${movie.imdbID}`}>
@@ -96,7 +80,7 @@ export default function Movies() {
                 </Link>
               </li>
             )
-          })} */}
+          })}
         </ul>
       </div>
       <Outlet />

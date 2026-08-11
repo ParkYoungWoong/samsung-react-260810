@@ -10,7 +10,7 @@ import Home from '@/routes/pages/Home'
 import Movies from '@/routes/pages/Movies'
 import MovieDetails from '@/routes/pages/MovieDetails'
 // import NotFound from '@/routes/pages/NotFound'
-import { requiresAuth } from '@/routes/loaders'
+// import { requiresAuth } from '@/routes/loaders'
 import Loader from '@/components/Loader'
 
 const dynamicOptions = {
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/movies',
-        loader: requiresAuth,
+        // loader: requiresAuth,
         element: <Movies />,
         children: [
           {
