@@ -13,3 +13,8 @@ export async function POST(request: Request) {
   const { data } = await axios.get(url)
   return Response.json(data)
 }
+
+// export async function PUT(request: Request) {
+//   // 처리...
+//   return Response.json(응답데이터)
+// }
