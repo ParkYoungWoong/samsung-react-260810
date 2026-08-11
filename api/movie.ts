@@ -1,0 +1,15 @@
+import axios from 'axios'
+
+interface RequestBody {
+  title?: string
+  id?: string
+}
+
+export async function POST(request: Request) {
+  const { title, id } = (await request.json()) as RequestBody
+  const url = id
+    ? `https://omdbapi.com?apikey=${process.env.OMDB_API_KEY}&i=${id}`
+    : `https://omdbapi.com?apikey=${process.env.OMDB_API_KEY}&s=${title}`
+  const { data } = await axios.get(url)
+  return Response.json(data)
+}
