@@ -1,4 +1,6 @@
 // Data Mode(CSR)
+// https://heropy.dev/#/movies/ => Hash Router
+// https://heropy.dev/movies => Browser Router
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { dynamic } from './dynamic'
 import Default from '@/routes/layouts/Default'
