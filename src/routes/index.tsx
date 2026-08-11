@@ -1,6 +1,6 @@
 // Data Mode(CSR)
-import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router'
+import { dynamic } from './dynamic'
 import Default from '@/routes/layouts/Default'
 import Home from '@/routes/pages/Home'
 // import About from '@/routes/pages/About'
@@ -9,13 +9,21 @@ import Movies from '@/routes/pages/Movies'
 import MovieDetails from '@/routes/pages/MovieDetails'
 // import NotFound from '@/routes/pages/NotFound'
 import { requiresAuth } from '@/routes/loaders'
+import Loader from '@/components/Loader'
 
-// const Home = lazy(() => import('@/routes/pages/Home'))
-const About = lazy(() => import('@/routes/pages/About'))
-const SignIn = lazy(() => import('@/routes/pages/SignIn'))
-// const Movies = lazy(() => import('@/routes/pages/Movies'))
-// const MovieDetails = lazy(() => import('@/routes/pages/MovieDetails'))
-const NotFound = lazy(() => import('@/routes/pages/NotFound'))
+const dynamicOptions = {
+  loading: <Loader />
+}
+
+// const Home = dynamic(() => import('@/routes/pages/Home'), dynamicOptions)
+const About = dynamic(() => import('@/routes/pages/About'), dynamicOptions)
+const SignIn = dynamic(() => import('@/routes/pages/SignIn'), dynamicOptions)
+// const Movies = dynamic(() => import('@/routes/pages/Movies'), dynamicOptions)
+// const MovieDetails = dynamic(() => import('@/routes/pages/MovieDetails'), dynamicOptions)
+const NotFound = dynamic(
+  () => import('@/routes/pages/NotFound'),
+  dynamicOptions
+)
 
 const router = createBrowserRouter([
   {
@@ -27,11 +35,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/about',
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <About />
-          </Suspense>
-        )
+        element: <About />
       },
       {
         path: '/signin',
