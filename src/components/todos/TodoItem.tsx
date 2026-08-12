@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUpdateTodo, useDeleteTodo } from '@/hooks/todo'
 import type { Todo } from '@/hooks/todo'
 
@@ -12,6 +12,16 @@ export default function TodoItem({ todo }: Props) {
   const [done, setDone] = useState(todo.done)
   const { mutateAsync: mutateForUpdate } = useUpdateTodo()
   const { mutateAsync: mutateForDelete } = useDeleteTodo()
+
+  useEffect(() => {
+    if (done !== todo.done) {
+      mutateForUpdate({
+        ...todo,
+        done
+      })
+    }
+    // eslint-disable-next-line
+  }, [done, todo])
 
   function onEditMode() {
     setIsEditing(true)
@@ -53,7 +63,11 @@ export default function TodoItem({ todo }: Props) {
         </>
       ) : (
         <>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={done}
+            onChange={e => setDone(e.target.checked)}
+          />
           <h3>{todo.title}</h3>
           <button onClick={() => onEditMode()}>수정</button>
         </>

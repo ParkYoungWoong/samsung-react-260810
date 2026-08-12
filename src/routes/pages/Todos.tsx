@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Loader from '@/components/Loader'
-import { useFetchTodos, useCreateTodo } from '@/hooks/todo'
+import { useFetchTodos, useCreateTodo, useTodoFilterStore } from '@/hooks/todo'
 import type { Todo } from '@/hooks/todo'
 import TodoItem from '@/components/todos/TodoItem'
 
@@ -8,6 +8,8 @@ export default function Todos() {
   const [title, setTitle] = useState('')
   const { data: todos = [] } = useFetchTodos()
   const { mutateAsync, isPending } = useCreateTodo()
+  const filters = useTodoFilterStore(s => s.filters)
+  const setFilter = useTodoFilterStore(s => s.setFilter)
 
   function createTodo() {
     if (!title.trim()) return
@@ -34,6 +36,15 @@ export default function Todos() {
           {isPending ? <Loader className="relative inline-block" /> : '추가'}
         </button>
       </div>
+      <ul className="flex gap-2">
+        {filters.map(filter => (
+          <li
+            key={filter}
+            onClick={() => setFilter(filter)}>
+            {filter}
+          </li>
+        ))}
+      </ul>
       <ul>
         {todos.map(todo => (
           <TodoItem
