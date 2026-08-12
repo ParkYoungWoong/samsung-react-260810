@@ -71,5 +71,55 @@ export function useCreateTodo() {
 }
 
 export function useUpdateTodo() {
-  return useMutation({})
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (todo: Todo) => {
+      // await new Promise(resolve => setTimeout(resolve, 3000))
+      // throw new Error('서버에 문제가 발생했습니다...')
+      const { data } = await api.put(`/${todo.id}`, todo)
+      return data
+    },
+    onMutate: todo => {
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      if (prevTodos) {
+        const newTodos = prevTodos.map(t => (t.id === todo.id ? todo : t))
+        queryClient.setQueryData(['todos'], newTodos)
+      }
+      return prevTodos
+    },
+    onSuccess: () => {},
+    onError: (error, _todo, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+        alert(error.message)
+      }
+    },
+    onSettled: () => {}
+  })
+}
+
+export function useDeleteTodo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (todo: Todo) => {
+      const { data } = await api.delete(`/${todo.id}`)
+      return data
+    },
+    onMutate: todo => {
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      if (prevTodos) {
+        const newTodos = prevTodos.filter(t => t.id !== todo.id)
+        queryClient.setQueryData(['todos'], newTodos)
+      }
+      return prevTodos
+    },
+    onSuccess: () => {},
+    onError: (error, _todo, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+        alert(error.message)
+      }
+    },
+    onSettled: () => {}
+  })
 }
