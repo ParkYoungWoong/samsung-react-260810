@@ -1,17 +1,14 @@
 import axios from 'axios'
-import { useState } from 'react'
-import {
-  useInfiniteQuery,
-  useQueryClient,
-  infiniteQueryOptions
-} from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useInfiniteQuery, infiniteQueryOptions } from '@tanstack/react-query'
 import { Link, Outlet } from 'react-router'
 import { useMovieStore } from '@/stores/movie'
+import { useInView } from 'react-intersection-observer'
 
 export interface ResponseDataSuccess {
   Response: 'True'
   Search: Movie[]
-  totalResults: string
+  totalResults: `${number}` // '817'
 }
 export interface ResponseDataError {
   Response: 'False'
@@ -27,11 +24,11 @@ export interface Movie {
 }
 
 export default function Movies() {
-  const queryClient = useQueryClient()
   // const { searchText, setSearchText } = useMovieStore(s => s) // ❌ 잘못된 코드!
   const searchText = useMovieStore(s => s.searchText)
   const setSearchText = useMovieStore(s => s.setSearchText)
   const [inputText, setInputText] = useState(searchText)
+  const { ref, inView } = useInView()
 
   const options = infiniteQueryOptions({
     queryKey: ['movies', searchText],
@@ -61,7 +58,14 @@ export default function Movies() {
     initialPageParam: 1
   })
 
-  const { data, refetch } = useInfiniteQuery(options)
+  const { data, fetchNextPage, isFetching, hasNextPage } =
+    useInfiniteQuery(options)
+
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage()
+    }
+  }, [inView, fetchNextPage])
 
   function fetchMovies() {
     setSearchText(inputText)
@@ -81,13 +85,18 @@ export default function Movies() {
         <button onClick={() => fetchMovies()}>검색!</button>
       </div>
       <div>
-        <button onClick={() => refetch()}>다시 가져오기!(무조건)</button>
-        <button onClick={() => queryClient.fetchQuery(options)}>
-          다시 가져오기!(신선도에 따라)
-        </button>
-      </div>
-      <div>
         <ul>
+          {data?.pages.map(page => {
+            return page.Search.map(movie => {
+              return (
+                <li key={movie.imdbID}>
+                  <Link to={`/movies/${movie.imdbID}`}>
+                    {movie.Title}({movie.Year})
+                  </Link>
+                </li>
+              )
+            })
+          })}
           {/* {movies?.map(movie => {
             return (
               <li key={movie.imdbID}>
@@ -98,6 +107,14 @@ export default function Movies() {
             )
           })} */}
         </ul>
+        <button
+          ref={ref}
+          style={{
+            display: isFetching || !hasNextPage ? 'none' : 'block'
+          }}
+          onClick={() => fetchNextPage()}>
+          더보기 +
+        </button>
       </div>
       <Outlet />
     </>
