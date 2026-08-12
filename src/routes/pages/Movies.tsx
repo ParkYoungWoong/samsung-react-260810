@@ -4,6 +4,7 @@ import { useInfiniteQuery, infiniteQueryOptions } from '@tanstack/react-query'
 import { Link, Outlet } from 'react-router'
 import { useMovieStore } from '@/stores/movie'
 import { useInView } from 'react-intersection-observer'
+import Loader from '@/components/Loader'
 
 export interface ResponseDataSuccess {
   Response: 'True'
@@ -28,13 +29,15 @@ export default function Movies() {
   const searchText = useMovieStore(s => s.searchText)
   const setSearchText = useMovieStore(s => s.setSearchText)
   const [inputText, setInputText] = useState(searchText)
-  const { ref, inView } = useInView()
+  const { ref, inView } = useInView({
+    rootMargin: '0px 0px 700px 0px'
+  })
 
   const options = infiniteQueryOptions({
     queryKey: ['movies', searchText],
     queryFn: async ({ signal, pageParam }) => {
       // await new Promise(resolve => setTimeout(resolve, 3000))
-      const { data } = await axios.post<ResponseData>(
+      const { data: page } = await axios.post<ResponseData>(
         '/api/movie',
         {
           title: searchText,
@@ -42,10 +45,10 @@ export default function Movies() {
         },
         { signal }
       )
-      if (data.Response === 'False') throw new Error(data.Error)
-      return data
+      if (page.Response === 'False') throw new Error(page.Error)
+      return page
     },
-    staleTime: 1000 * 5, // 캐싱하는 시간(ms)
+    staleTime: 1000 * 60 * 5, // 캐싱하는 시간(ms)
     enabled: Boolean(searchText),
     placeholderData: prev => prev, // 깜빡이는 부분에 채워넣을 데이터
     getNextPageParam: (lastPage, pages) => {
@@ -55,11 +58,23 @@ export default function Movies() {
       if (currentPage < maxPage) return currentPage + 1
       return null
     },
-    initialPageParam: 1
+    initialPageParam: 1,
+    select: data => data.pages.flatMap(page => page.Search)
   })
+  // const pages = [
+  //   { Search: [1, 2, 3] },
+  //   { Search: [4, 5, 6] },
+  //   { Search: [7, 8, 9] }
+  // ]
+  // const movies = pages.flatMap(page => page.Search)
+  // console.log(movies) // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-  const { data, fetchNextPage, isFetching, hasNextPage } =
-    useInfiniteQuery(options)
+  const {
+    data: movies,
+    fetchNextPage,
+    isFetching,
+    hasNextPage
+  } = useInfiniteQuery(options)
 
   useEffect(() => {
     if (inView) {
@@ -86,7 +101,7 @@ export default function Movies() {
       </div>
       <div>
         <ul>
-          {data?.pages.map(page => {
+          {/* {data?.pages.map(page => {
             return page.Search.map(movie => {
               return (
                 <li key={movie.imdbID}>
@@ -96,8 +111,8 @@ export default function Movies() {
                 </li>
               )
             })
-          })}
-          {/* {movies?.map(movie => {
+          })} */}
+          {movies?.map(movie => {
             return (
               <li key={movie.imdbID}>
                 <Link to={`/movies/${movie.imdbID}`}>
@@ -105,16 +120,15 @@ export default function Movies() {
                 </Link>
               </li>
             )
-          })} */}
+          })}
         </ul>
-        <button
+        {isFetching && <Loader className="relative" />}
+        <div
           ref={ref}
           style={{
-            display: isFetching || !hasNextPage ? 'none' : 'block'
-          }}
-          onClick={() => fetchNextPage()}>
-          더보기 +
-        </button>
+            display: isFetching || !hasNextPage ? 'none' : 'block',
+            height: '10px'
+          }}></div>
       </div>
       <Outlet />
     </>
