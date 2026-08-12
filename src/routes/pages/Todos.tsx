@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import Loader from '@/components/Loader'
 
 interface Todo {
   id: string // 할 일 ID
@@ -21,7 +22,9 @@ const api = axios.create({
 })
 
 export default function Todos() {
+  const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
+
   const { data: todos = [] } = useQuery({
     queryKey: ['todos'],
     queryFn: async () => {
@@ -39,13 +42,33 @@ export default function Todos() {
   //   onSettled()
   // }
 
-  const 반환 = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: async () => {
+      if (!title.trim()) return
+      await new Promise(resolve => setTimeout(resolve, 3000))
       const { data } = await api.post('/', { title })
+      return data
     },
-    onMutate: () => {},
-    onSuccess: () => {},
-    onError: () => {},
+    onMutate: () => {
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      const newTodo = {
+        id: Math.random().toString(),
+        title
+      }
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], [newTodo, ...prevTodos])
+      }
+      return prevTodos
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] }) // 무효화 => 다시 가져와라!
+    },
+    onError: (error, _abc, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+        alert(error.message)
+      }
+    },
     onSettled: () => {}
   })
 
@@ -56,8 +79,14 @@ export default function Todos() {
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
+          onKeyDown={e => {
+            if (e.nativeEvent.isComposing) return // 한글 중복 입력 이슈
+            if (e.key === 'Enter') mutateAsync()
+          }}
         />
-        <button>추가</button>
+        <button onClick={() => mutateAsync()}>
+          {isPending ? <Loader className="relative inline-block" /> : '추가'}
+        </button>
       </div>
       <ul>
         {todos.map(todo => (
